@@ -1,0 +1,117 @@
+# ARIADNE input file — worked example.
+#
+# Flavocytochrome b2: electron transfer from the FMN cofactor to the heme iron.
+# Copy this file, change the donor and acceptor to suit your own system, and
+# leave the rest alone until you have a run working.
+#
+# Syntax: one `key = value` per line. `#` starts a comment. Blank lines are
+# ignored. Any key you omit takes the Pathways plugin's own default.
+
+
+# ---------------------------------------------------------------------------
+# REQUIRED — what is transferring, and through what
+# ---------------------------------------------------------------------------
+#
+# These three are VMD atom selections: the same syntax as the selection box in
+# the VMD GUI. Test them there first if you are unsure.
+#
+# `donor` and `acceptor` should each name ONE atom in practice. If a selection
+# matches several — two copies of a cofactor, say — the plugin picks whichever
+# gives the largest coupling, which is rarely what you meant.
+#
+# This system is a live example: it holds two FMN, so `resname FMN and name N5`
+# alone matches both. The plugin happens to choose resid 927, the copy in the
+# same subunit as the heme, but relying on that would silently switch subunits
+# if some frame ever favoured the other. `and resid 927` pins it.
+
+donor    = resname FMN and name N5 and resid 927
+acceptor = resname FE1 and name FE
+
+# The medium the electron tunnels through. `all` means the whole system; the
+# plugin prunes it to a shell around the donor–acceptor line before searching,
+# so `all` is not as expensive as it sounds. Water is excluded unless you pass
+# --water on the command line.
+
+bridge   = all
+
+
+# ---------------------------------------------------------------------------
+# COST — the two dials that decide how long the run takes
+# ---------------------------------------------------------------------------
+#
+# npaths: how many ranked pathways to return per frame. Rank 0 is the dominant
+# path. npaths = 1 is about 3.3x cheaper than npaths = 5 and is enough for
+# <T_DA>, its fluctuation and the coherence parameter. Ask for more only if you
+# want to see how much the route varies between competing paths.
+
+npaths   = 1
+
+# frames: which frames to compute, as start:stop:stride, 0-based, stop
+# INCLUSIVE. Omit the key to compute every frame. Stride is the cheapest way to
+# halve a run: if frames are 100 ps apart and the coupling decorrelates in far
+# less than a nanosecond, every second frame gives you nearly the same
+# statistics for half the wall time.
+#
+# Start small. Ten frames tells you the selections are right before you commit
+# to an overnight run.
+
+frames   = 0:9:1
+
+
+# ---------------------------------------------------------------------------
+# PHYSICS — hydrogen bonds
+# ---------------------------------------------------------------------------
+#
+# This flag reads backwards from how it sounds, so read twice:
+#
+#   withh = 1  hydrogens are explicitly present in the structure, and the
+#              plugin deliberately writes an EMPTY hydrogen-bond list. NO
+#              hydrogen-bond jumps are considered at all.
+#
+#   withh = 0  hydrogens are stripped and `measure hbonds` is run, so
+#              hydrogen-bond mediated steps ARE available.
+#
+# To ENABLE hydrogen bonds, set withh = 0. That is what this example does,
+# because in most systems the h-bond steps are a real part of the answer.
+#
+# Expect a smaller pruned subsystem with withh = 0, since the hydrogens are
+# removed before the search sees the structure.
+
+withh    = 0
+
+
+# ---------------------------------------------------------------------------
+# EVERYTHING BELOW IS OPTIONAL — presentation for `ariadne view`
+# ---------------------------------------------------------------------------
+#
+# These affect only the 3D viewer, never the numbers. They are ignored by the
+# analysis run and excluded from the --resume guard, so you can change them
+# freely without invalidating a long computation.
+
+# Which computed frames to render. Rendering every frame of a long run is
+# rarely useful; every tenth is smooth enough to watch. You can only render
+# frames you actually computed.
+view_frames = 0:9:1
+
+# Cylinder radius of the dominant path, in angstroms.
+view_radius = 0.35
+
+# `0` draws the dominant path only; `all` also draws lower-ranked paths faintly
+# behind it. With npaths = 1 there is nothing else to draw, so this is moot
+# until you raise npaths.
+view_ranks  = all
+
+# Path colours, by step type. VMD colours atoms by element — nitrogen blue,
+# oxygen red — so a blue or red path competes with the licorice it runs
+# through. These warm defaults do not. Any VMD colour name or index works.
+# Note orange3 is the LIGHTER orange; orange2 is darker.
+view_color_covalent      = orange
+view_color_hbond         = orange3
+view_color_through_space = yellow
+
+# Seeing past the protein. The cartoon is kept only within this shell of the
+# path, and whatever cartoon still sits between the camera and the path is
+# clipped away, leaving the structure behind it as context. Set the radius to 0
+# to drop the cartoon entirely, or make it large to restore the whole protein.
+view_context_radius      = 12
+view_clip_front          = yes

@@ -1,0 +1,35 @@
+# MD trajectories, topologies and restarts — never commit these
+*.nc
+*.prmtop
+*.inpcrd
+*.rst
+*.rst7
+*.mdcrd
+*.dcd
+*.psf
+*.parm7
+*.crd
+
+# Pathways / pathcore run artifacts
+*.cb
+*.hb
+*.out
+scratch/
+*.pathways/
+
+# The test suite and the old per-system input files stay local: both hard-code
+# absolute paths to the reference trajectory on this machine, so neither is
+# meaningful to anyone cloning the repo. docs/ is internal design notes in the
+# same position. `tutorial/` is the published example.
+tests/
+examples/
+docs/
+
+# Windows interop leftovers
+*:Zone.Identifier
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
